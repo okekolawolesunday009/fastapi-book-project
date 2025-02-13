@@ -20,12 +20,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m venv venv  # Create virtual environment
+          python -m venv venv  # Create virtual environment
           source venv/bin/activate  # Activate virtual environment
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Deploy to Server@18.210.20.229 
+      - name: Deploy to Server
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
@@ -33,26 +33,15 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 18.210.20.229 >> ~/.ssh/known_hosts
+
           ssh -o StrictHostKeyChecking=no ubuntu@18.210.20.229 -i ~/.ssh/id_rsa << 'EOF'
-            cd fastapi-book-project || exit 1  # Ensure the folder exists
+            cd fastapi-book-project || exit 1  # Ensure folder exists
             git pull origin main  # Pull latest code
-            
-            # Ensure virtual environment exists
-            if [ ! -d "venv" ]; then
-              python3 -m venv venv
-            fi
-            
             source venv/bin/activate  # Activate virtual environment
-            pip install --upgrade pip
-            pip install -r requirements.txt  # Install dependencies
-            
-            # Ensure Uvicorn is installed
-            if ! command -v uvicorn &> /dev/null; then
-              echo "Uvicorn is not installed, installing..."
-              pip install uvicorn
-            fi
-            
-            # Restart Uvicorn with nohup to keep it running
-            nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > app.log 2>&1 &
-            disown
+            sudo docker stop fastapi-app || true  # Stop running container if exists
+            sudo docker rm fastapi-app || true  # Remove old container
+            sudo docker rmi fastapi-app || true  # Remove old image
+            sudo docker build -t fastapi-app .  # Build new image
+            sudo docker run -d --name fastapi-app -p 8000:8000 fastapi-app  # Run new container
+            sudo docker system prune -f  # Cleanup unused images (optional)
           EOF
