@@ -18,7 +18,7 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.API_PREFIX)
 
 
-@app.get("/healthcheck")
+@app.get("/adunola")
 async def health_check():
     """Checks if server is active and live."""
-    return {"status": "active"}
+    return {"status": "Happy Valentine ♥️👨‍❤️‍💋‍👨"}
