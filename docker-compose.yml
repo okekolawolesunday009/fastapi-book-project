@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  fastapi:
+    build:
+      context: ./backend
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./backend:/app
+
+  websocket:
+    build:
+      context: ./webSocket
+    container_name: websocket_server
+    ports:
+      - "6789:6789"
+    command: npm run dev
+    volumes:
+      - ./webSocket:/app
+
+networks:
+  app_network:  # This is the network both containers will use
+    driver: bridge

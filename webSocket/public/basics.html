@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <div id="messages">i am kola</div>
+    <button id="sendMessage">Send Message to Server</button>
+
+    <!-- Include the socket.io client script from the server -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        const socket = io('http://localhost:6789');
+
+        // Listen for the welcome message from the server
+        socket.on("messageFromServer", (data) => {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = data.data;  // Display the welcome message
+        });
+
+        // Send a message to the server when the button is clicked
+        document.getElementById('sendMessage').addEventListener('click', () => {
+            socket.emit('messageFromClient', { message: 'Hello from the client!' });
+        });
+    </script>
+</body>
+</html>
